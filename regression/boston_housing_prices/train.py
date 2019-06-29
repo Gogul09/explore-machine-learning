@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -214,3 +215,16 @@ print("[INFO] MSE : {}".format(round(mean_squared_error(Y_test, predictions), 3)
 
 plt.scatter(predictions, Y_test, alpha=0.5)
 plt.show()
+
+# plot model's feature importance
+feature_importance = best_model.feature_importances_
+feature_importance = 100.0 * (feature_importance / feature_importance.max())
+sorted_idx = np.argsort(feature_importance)
+pos = np.arange(sorted_idx.shape[0]) + .5
+plt.barh(pos, feature_importance[sorted_idx], align='center')
+plt.yticks(pos, dataset.feature_names[sorted_idx])
+plt.xlabel('Relative Importance')
+plt.title('Variable Importance')
+plt.savefig("feature_importance.png")
+plt.clf()
+plt.close()

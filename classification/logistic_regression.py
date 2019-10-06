@@ -70,10 +70,14 @@ def l2_compute_log_likelihood(features, labels, weights, l2_penalty):
 	return ll
 
 # logistic regression without L2 regularization
-def logistic_regression(features, labels, weights, lr, epochs):
+def logistic_regression(features, labels, lr, epochs):
+
+	# add bias (intercept) with features matrix
+	bias      = np.ones((features.shape[0], 1))
+	features  = np.hstack((bias, features))
 
 	# initialize the weight coefficients
-	weights = np.array(weights)
+	weights = np.zeros((features.shape[1], 1))
 
 	# loop over epochs times
 	for epoch in range(epochs):
@@ -104,10 +108,14 @@ def logistic_regression(features, labels, weights, lr, epochs):
 	return weights
 
 # logistic regression with L2 regularization
-def l2_logistic_regression(features, labels, weights, lr, epochs, l2_penalty):
+def l2_logistic_regression(features, labels, lr, epochs, l2_penalty):
+
+	# add bias (intercept) with features matrix
+	bias      = np.ones((features.shape[0], 1))
+	features  = np.hstack((bias, features))
 
 	# initialize the weight coefficients
-	weights = np.array(weights)
+	weights = np.zeros((features.shape[1], 1))
 
 	# loop over epochs times
 	for epoch in range(epochs):
@@ -141,43 +149,50 @@ def l2_logistic_regression(features, labels, weights, lr, epochs, l2_penalty):
 
 # logistic regression without regularization
 def lr_without_regularization():
-	# initialize weights to zero
-	init_weights  = np.zeros((len(data.feature_names),1))
-
 	# hyper-parameters
 	learning_rate = 1e-7
-	epochs        = 500
+	epochs        = 1500
 
 	# perform logistic regression and get the learned weights
-	learned_weights = logistic_regression(X_train, y_train, init_weights, learning_rate, epochs)
+	learned_weights = logistic_regression(X_train, y_train, learning_rate, epochs)
 
 	# make predictions using learned weights on testing data
-	predictions = predict_probability(X_test, learned_weights)
-	class_predictions = (predictions.flatten()>0.5)
-	print("Accuracy of our LR classifier: {}".format(accuracy_score(np.expand_dims(y_test, axis=1), (predictions.flatten())>0.5)))
+	bias_train     = np.ones((X_train.shape[0], 1))
+	bias_test      = np.ones((X_test.shape[0], 1))
+	features_train = np.hstack((bias_train, X_train))
+	features_test  = np.hstack((bias_test, X_test))
+
+	test_predictions  = (predict_probability(features_test, learned_weights).flatten()>0.5)
+	train_predictions = (predict_probability(features_train, learned_weights).flatten()>0.5)
+	print("Accuracy of our LR classifier on training data: {}".format(accuracy_score(np.expand_dims(y_train, axis=1), train_predictions)))
+	print("Accuracy of our LR classifier on testing data: {}".format(accuracy_score(np.expand_dims(y_test, axis=1), test_predictions)))
 
 	# using scikit-learn's logistic regression classifier
 	model = LogisticRegression(random_state=9)
 	model.fit(X_train, y_train)
-	sk_predictions = model.predict(X_test)
-	print("Accuracy of scikit-learn's LR classifier: {}".format(accuracy_score(y_test, sk_predictions)))
+	sk_test_predictions  = model.predict(X_test)
+	sk_train_predictions = model.predict(X_train)
+	print("Accuracy of scikit-learn's LR classifier on training data: {}".format(accuracy_score(y_train, sk_train_predictions)))
+	print("Accuracy of scikit-learn's LR classifier on testing data: {}".format(accuracy_score(y_test, sk_test_predictions)))
 
 # logistic regression with regularization
 def lr_with_regularization():
-	# initialize weights to zero
-	init_weights  = np.zeros((len(data.feature_names),1))
-
 	# hyper-parameters
 	learning_rate = 1e-7
-	epochs        = 1000
-	l2_penalty    = 50
+	epochs        = 10000
+	l2_penalty    = 0.001
 
 	# perform logistic regression and get the learned weights
-	learned_weights = l2_logistic_regression(X_train, y_train, init_weights, learning_rate, epochs, l2_penalty)
+	learned_weights = l2_logistic_regression(X_train, y_train, learning_rate, epochs, l2_penalty)
 
 	# make predictions using learned weights on testing data
-	test_predictions  = (predict_probability(X_test, learned_weights).flatten()>0.5)
-	train_predictions = (predict_probability(X_train, learned_weights).flatten()>0.5)
+	bias_train     = np.ones((X_train.shape[0], 1))
+	bias_test      = np.ones((X_test.shape[0], 1))
+	features_train = np.hstack((bias_train, X_train))
+	features_test  = np.hstack((bias_test, X_test))
+
+	test_predictions  = (predict_probability(features_test, learned_weights).flatten()>0.5)
+	train_predictions = (predict_probability(features_train, learned_weights).flatten()>0.5)
 	print("Accuracy of our LR classifier on training data: {}".format(accuracy_score(np.expand_dims(y_train, axis=1), train_predictions)))
 	print("Accuracy of our LR classifier on testing data: {}".format(accuracy_score(np.expand_dims(y_test, axis=1), test_predictions)))
 

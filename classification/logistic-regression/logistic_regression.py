@@ -9,6 +9,7 @@
 
 # organize imports
 import numpy as np
+import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
@@ -28,6 +29,10 @@ print("No.of.data points (rows) : {}".format(len(data.data)))
 print("No.of.features (columns) : {}".format(len(data.feature_names)))
 print("No.of.classes            : {}".format(len(data.target_names)))
 print("Class names              : {}".format(list(data.target_names)))
+
+# view the datatype of each column
+df = pd.DataFrame(data.data)
+print(df.dtypes)
 
 # split the dataset into training and testing 
 X_train, X_test, y_train, y_test = train_test_split(data.data, data.target, test_size=0.20, random_state=9)
@@ -193,11 +198,13 @@ def lr_without_regularization():
 	print("Accuracy of scikit-learn's LR classifier on training data: {}".format(accuracy_score(y_train, sk_train_predictions)))
 	print("Accuracy of scikit-learn's LR classifier on testing data: {}".format(accuracy_score(y_test, sk_test_predictions)))
 
+	#visualize_weights(np.squeeze(learned_weights), 'weights_without_l2.jpg')
+
 # logistic regression with regularization
 def lr_with_regularization():
 	# hyper-parameters
 	learning_rate = 1e-7
-	epochs        = 500
+	epochs        = 300000
 	l2_penalty    = 0.001
 
 	# perform logistic regression and get the learned weights
@@ -222,4 +229,21 @@ def lr_with_regularization():
 	print("Accuracy of scikit-learn's LR classifier on training data: {}".format(accuracy_score(y_train, sk_train_predictions)))
 	print("Accuracy of scikit-learn's LR classifier on testing data: {}".format(accuracy_score(y_test, sk_test_predictions)))
 
-lr_without_regularization()
+	visualize_weights(np.squeeze(learned_weights), 'weights_with_l2.jpg')
+
+# visualize weight coefficients
+def visualize_weights(weights, title):
+	import matplotlib.pyplot as plt
+	x = np.linspace(0, len(weights), len(weights))
+
+	fig = plt.figure()
+	plt.bar(x, weights, align='center', alpha=0.5)
+	plt.xlabel("Weight Index (Feature Column Number)")
+	plt.ylabel("Weight Coefficient")
+	plt.title('Visualizing Weights')
+	plt.tight_layout()
+	fig.savefig(title)
+
+	plt.show()
+
+lr_with_regularization()
